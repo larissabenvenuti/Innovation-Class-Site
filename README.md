@@ -1,2 +1,3 @@
-# Innovation-Class-Site
-Site feito para o programa de estágio Innovation Class da AVANTI
+### Site Avanti - Innovation Class
+
+Site feito com HTML, CSS e Javascript para o programa de estágio Innovation Class da AVANTI
