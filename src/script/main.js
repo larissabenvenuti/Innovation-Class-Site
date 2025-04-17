@@ -3,30 +3,46 @@ const searchInput = document.querySelector(".search-bar input");
 
 function createSearchResultsContainer() {
   let resultsContainer = document.querySelector(".search-results-container");
+
   if (!resultsContainer) {
     resultsContainer = document.createElement("div");
     resultsContainer.className = "search-results-container";
     const navElement = document.querySelector(".main-nav");
     navElement.insertAdjacentElement("afterend", resultsContainer);
   }
+
   return resultsContainer;
 }
 
 function handleSearch(event) {
   event.preventDefault();
   const searchQuery = searchInput.value.trim();
+
   if (searchQuery) {
     const resultsContainer = createSearchResultsContainer();
     resultsContainer.innerHTML = "";
+
     const searchMessage = document.createElement("div");
     searchMessage.className = "search-message container";
     searchMessage.innerHTML = `<h2>Você buscou por: "${searchQuery}"</h2>`;
+
+    const closeButton = document.createElement("div");
+    closeButton.className = "close-search-results";
+    closeButton.innerHTML = "&times;";
+    closeButton.style.cursor = "pointer";
+    closeButton.style.fontSize = "30px";
+    closeButton.style.marginLeft = "20px"; 
+    closeButton.style.display = "inline-block";
+
+    searchMessage.appendChild(closeButton);
+
     resultsContainer.appendChild(searchMessage);
+
     const resultsElement = document.createElement("div");
     resultsElement.className = "search-results-list container";
-    resultsElement.innerHTML =
-      '<p class="loading-results">Buscando produtos...</p>';
+    resultsElement.innerHTML = '<p class="loading-results">Buscando produtos...</p>';
     resultsContainer.appendChild(resultsElement);
+
     setTimeout(() => {
       resultsElement.innerHTML = `
         <div class="product-grid search-results-grid">
@@ -36,8 +52,13 @@ function handleSearch(event) {
           </div>
         </div>
       `;
-    }, 1000);
-    resultsContainer.scrollIntoView({ behavior: "smooth" });
+
+      closeButton.addEventListener("click", function () {
+        resultsContainer.remove(); 
+      });
+
+      resultsContainer.scrollIntoView({ behavior: "smooth" });
+    }, 1000); 
   }
 }
 
@@ -65,7 +86,9 @@ function initFooterAccordion() {
   const isMobile = window.innerWidth <= 767;
   if (!isMobile) return;
 
-  const accordionHeaders = document.querySelectorAll(".footer-links > div > h4");
+  const accordionHeaders = document.querySelectorAll(
+    ".footer-links > div > h4"
+  );
 
   accordionHeaders.forEach((header) => {
     header.addEventListener("click", function () {
@@ -96,9 +119,9 @@ function initializeCarousel(carousel) {
   const track = carousel.querySelector(".carousel-track");
   const prevBtn = carousel.querySelector(".prev-btn");
   const nextBtn = carousel.querySelector(".next-btn");
-  const dots = carousel.querySelectorAll(".pagination-dots .dot");
-  const cards = track?.querySelectorAll(".product-card") || [];
   const carouselWrapper = carousel.querySelector(".carousel-wrapper");
+
+  const cards = track?.querySelectorAll(".product-card") || [];
 
   if (!track || !prevBtn || !nextBtn || cards.length === 0 || !carouselWrapper) {
     console.warn("Carrossel incompleto. Adicione elementos.");
@@ -118,6 +141,29 @@ function initializeCarousel(carousel) {
     return { cardWidth, visibleCards, maxPosition };
   }
 
+  function createDots(maxPosition) {
+    const dotsContainer = carousel.querySelector(".pagination-dots");
+    if (!dotsContainer) return;
+
+    dotsContainer.innerHTML = "";
+
+    for (let i = 0; i <= maxPosition; i++) {
+      const dot = document.createElement("span");
+      dot.classList.add("dot");
+      if (i === 0) dot.classList.add("active");
+
+      dot.addEventListener("click", () => moveCarousel(i));
+      dotsContainer.appendChild(dot);
+    }
+  }
+
+  function updateDots(position) {
+    const dots = carousel.querySelectorAll(".pagination-dots .dot");
+    dots.forEach((dot, index) => {
+      dot.classList.toggle("active", index === position);
+    });
+  }
+
   function moveCarousel(position) {
     const { cardWidth, visibleCards, maxPosition } = getCarouselSettings();
     position = Math.max(0, Math.min(position, maxPosition));
@@ -125,12 +171,7 @@ function initializeCarousel(carousel) {
     const translateValue = -position * visibleCards * cardWidth;
     track.style.transition = "transform 0.3s ease";
     track.style.transform = `translateX(${translateValue}px)`;
-
-    if (dots.length > 0) {
-      dots.forEach((dot, index) => {
-        dot.classList.toggle("active", index === position);
-      });
-    }
+    updateDots(position);
   }
 
   prevBtn.addEventListener("click", () => {
@@ -146,22 +187,23 @@ function initializeCarousel(carousel) {
     }
   });
 
-  if (dots.length > 0) {
-    dots.forEach((dot, index) => {
-      dot.addEventListener("click", () => moveCarousel(index));
-    });
-  }
-
   window.addEventListener(
     "resize",
-    debounce(() => moveCarousel(currentPosition), 250)
+    debounce(() => {
+      const { maxPosition } = getCarouselSettings();
+      createDots(maxPosition);
+      moveCarousel(currentPosition);
+    }, 250)
   );
 
+  const { maxPosition } = getCarouselSettings();
+  createDots(maxPosition);
   moveCarousel(0);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
   const headerContainer = document.querySelector(".header-container");
+
   const mobileMenuToggle = document.createElement("div");
   mobileMenuToggle.className = "mobile-menu-toggle";
   mobileMenuToggle.innerHTML = "<span></span><span></span><span></span>";
@@ -209,7 +251,9 @@ document.addEventListener("DOMContentLoaded", function () {
           menuItems.forEach((otherItem) => {
             if (otherItem !== item) {
               otherItem.classList.remove("touch-active");
-              const otherIndicator = otherItem.querySelector(".mobile-dropdown-indicator");
+              const otherIndicator = otherItem.querySelector(
+                ".mobile-dropdown-indicator"
+              );
               if (otherIndicator) otherIndicator.innerHTML = "+";
             }
           });
@@ -219,7 +263,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.addEventListener("click", function (e) {
-    if (!e.target.closest(".main-nav") && !e.target.closest(".mobile-menu-toggle")) {
+    if (
+      !e.target.closest(".main-nav") &&
+      !e.target.closest(".mobile-menu-toggle")
+    ) {
       mainNav.classList.remove("active");
       mobileMenuToggle.classList.remove("active");
       const spans = mobileMenuToggle.querySelectorAll("span");
@@ -248,4 +295,121 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   initFooterAccordion();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const checkMobile = () => {
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      setupMobileSlider();
+    }
+  };
+
+  function setupMobileSlider() {
+    const slides = document.querySelectorAll(".slide");
+    const dots = document.querySelectorAll(".slider-dot");
+    let currentSlide = 0;
+    let slideInterval;
+    let isAnimating = false;
+
+    function showSlide(index) {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      slides.forEach((slide) => slide.classList.remove("active"));
+      dots.forEach((dot) => dot.classList.remove("active"));
+
+      slides[index].classList.add("active");
+      dots[index].classList.add("active");
+
+      currentSlide = index;
+
+      setTimeout(() => {
+        isAnimating = false;
+      }, 600);
+    }
+
+    dots.forEach((dot) => {
+      dot.addEventListener("click", function () {
+        if (isAnimating) return;
+
+        const slideIndex = parseInt(this.getAttribute("data-slide"));
+        showSlide(slideIndex);
+
+        clearInterval(slideInterval);
+        startAutoSlide();
+      });
+    });
+
+    function startAutoSlide() {
+      clearInterval(slideInterval);
+      slideInterval = setInterval(function () {
+        if (isAnimating) return;
+
+        let nextSlide = currentSlide + 1;
+        if (nextSlide >= slides.length) {
+          nextSlide = 0;
+        }
+        showSlide(nextSlide);
+      }, 5000);
+    }
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const sliderContainer = document.querySelector(".slider-container");
+
+    sliderContainer.addEventListener(
+      "touchstart",
+      function (e) {
+        if (isAnimating) return;
+        touchStartX = e.changedTouches[0].screenX;
+
+        clearInterval(slideInterval);
+      },
+      { passive: true }
+    );
+
+    sliderContainer.addEventListener(
+      "touchend",
+      function (e) {
+        if (isAnimating) return;
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+
+        startAutoSlide();
+      },
+      { passive: true }
+    );
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const swipeDistance = touchEndX - touchStartX;
+
+      if (Math.abs(swipeDistance) < swipeThreshold) {
+        return;
+      }
+
+      if (swipeDistance < 0) {
+        let nextSlide = currentSlide + 1;
+        if (nextSlide >= slides.length) {
+          nextSlide = 0;
+        }
+        showSlide(nextSlide);
+      } else {
+        let prevSlide = currentSlide - 1;
+        if (prevSlide < 0) {
+          prevSlide = slides.length - 1;
+        }
+        showSlide(prevSlide);
+      }
+    }
+
+    startAutoSlide();
+  }
+
+  checkMobile();
+
+  window.addEventListener('resize', checkMobile);
 });
