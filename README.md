@@ -19,6 +19,3 @@
 1. Clone o repositório utilizando git clone
 2. Abra o diretório do projeto no VS Code
 3. Utilize o live server para ver o site
-
-## 🔒 Licença
-#### Este projeto está sob a proteção de **Direitos Autorais Reservados**. Todos os direitos sobre o código-fonte, design, conteúdo e quaisquer outros elementos presentes neste repositório são de propriedade exclusiva de Larissa Benvenuti. A reprodução, distribuição, modificação, exibição pública ou uso comercial, total ou parcial, sem autorização expressa por escrito do(s) detentor(es) dos direitos, é estritamente proibida.
